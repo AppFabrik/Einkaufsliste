@@ -1,19 +1,21 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bunte Einkaufsliste</title>
+    <title>Moderne Einkaufsliste</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#FF6B6B">
     <link rel="apple-touch-icon" href="icon-512.png">
     
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
             --primary: #FF6B6B;
             --secondary: #4ECDC4;
-            --baumarkt: #f39c12; /* Orange für Baumarkt */
+            --baumarkt: #D35400; /* Abgedunkeltes Orange für perfekten Kontrast */
             --whatsapp: #25D366;
             --danger: #FF4757;
             --share: #5f27cd;
@@ -60,7 +62,12 @@
             background: #f8f9fa;
             cursor: pointer;
             font-weight: bold;
+            color: var(--text-dark);
             transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .mode-btn.active[data-mode="discounter"] {
@@ -75,7 +82,16 @@
             color: white;
         }
 
-        h1 { text-align: center; color: var(--primary); font-size: 24px; margin-bottom: 5px; }
+        h1 { 
+            text-align: center; 
+            color: var(--primary); 
+            font-size: 24px; 
+            margin-bottom: 5px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
 
         .input-group { display: flex; flex-direction: column; gap: 10px; }
 
@@ -97,6 +113,10 @@
             font-weight: bold;
             color: var(--white);
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         #addBtn { background-color: var(--secondary); }
@@ -122,11 +142,18 @@
             border: 2px solid var(--secondary);
             display: flex; justify-content: center; align-items: center; font-size: 12px;
         }
+        
         .baumarkt-theme .checkbox { border-color: var(--baumarkt); }
         .checked .checkbox { background-color: var(--secondary); color: white; }
         .baumarkt-theme .checked .checkbox { background-color: var(--baumarkt); }
 
-        .delete-item-btn { background: transparent; color: var(--danger); width: auto; font-size: 18px; }
+        .delete-item-btn { 
+            background: transparent; 
+            color: var(--danger); 
+            width: auto; 
+            font-size: 18px; 
+            padding: 5px;
+        }
 
         .action-buttons { display: flex; flex-direction: column; gap: 8px; }
         .whatsapp-btn { background-color: var(--whatsapp); }
@@ -137,11 +164,15 @@
 <body class="discounter-theme">
 
     <div class="app-container">
-        <h1 id="appTitle">🛒 Discounter Liste</h1>
+        <h1 id="appTitle"><i class="fa-solid fa-basket-shopping"></i> Discounter Liste</h1>
 
         <div class="mode-selector">
-            <button class="mode-btn active" data-mode="discounter" onclick="setMode('discounter')">🍎 Discounter</button>
-            <button class="mode-btn" data-mode="baumarkt" onclick="setMode('baumarkt')">🔨 Baumarkt</button>
+            <button class="mode-btn active" data-mode="discounter" onclick="setMode('discounter')">
+                <i class="fa-solid fa-basket-shopping"></i> Discounter
+            </button>
+            <button class="mode-btn" data-mode="baumarkt" onclick="setMode('baumarkt')">
+                <i class="fa-solid fa-toolbox"></i> Baumarkt
+            </button>
         </div>
 
         <div class="input-group">
@@ -150,13 +181,13 @@
             <input type="text" id="quantityInput" placeholder="Menge (optional)">
         </div>
 
-        <button id="addBtn" onclick="addItem()">Hinzufügen ➕</button>
+        <button id="addBtn" onclick="addItem()">Hinzufügen <i class="fa-solid fa-plus"></i></button>
 
         <ul id="shoppingList"></ul>
 
         <div class="action-buttons">
-            <button class="whatsapp-btn" onclick="shareWhatsApp()">Liste teilen 💬</button>
-            <button class="clear-btn" onclick="clearList()">Liste löschen 🗑️</button>
+            <button class="whatsapp-btn" onclick="shareWhatsApp()">Liste teilen <i class="fa-brands fa-whatsapp"></i></button>
+            <button class="clear-btn" onclick="clearList()">Liste löschen <i class="fa-solid fa-trash-can"></i></button>
         </div>
     </div>
 
@@ -179,7 +210,14 @@
             
             // UI Anpassungen
             document.body.className = mode + '-theme';
-            document.getElementById('appTitle').innerText = mode === 'discounter' ? '🛒 Discounter Liste' : '🔨 Baumarkt Liste';
+            
+            // Update Title with corresponding Icon
+            const titleElement = document.getElementById('appTitle');
+            if(mode === 'discounter') {
+                titleElement.innerHTML = '<i class="fa-solid fa-basket-shopping"></i> Discounter Liste';
+            } else {
+                titleElement.innerHTML = '<i class="fa-solid fa-toolbox"></i> Baumarkt Liste';
+            }
             
             document.querySelectorAll('.mode-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
@@ -220,12 +258,16 @@
             listContainer.innerHTML = '';
             data[currentMode].items.forEach((item, index) => {
                 const li = document.createElement('li');
+                
+                // Icon für Checkbox einbauen
+                const checkIcon = item.checked ? '<i class="fa-solid fa-check"></i>' : '';
+                
                 li.innerHTML = `
                     <div class="item-content ${item.checked ? 'checked' : ''}" onclick="toggleCheck(${index})">
-                        <div class="checkbox">${item.checked ? '✓' : ''}</div>
+                        <div class="checkbox">${checkIcon}</div>
                         <span class="item-text">${item.qty ? item.qty + ' ' : ''}${item.art}</span>
                     </div>
-                    <button class="delete-item-btn" onclick="deleteItem(${index})">✖</button>
+                    <button class="delete-item-btn" onclick="deleteItem(${index})"><i class="fa-solid fa-xmark"></i></button>
                 `;
                 listContainer.appendChild(li);
             });
@@ -253,6 +295,7 @@
 
         function shareWhatsApp() {
             let text = `*${currentMode.toUpperCase()}-LISTE:*\n`;
+            // Hier bleiben die echten Emojis erhalten, da WhatsApp sie benötigt
             data[currentMode].items.forEach(i => {
                 text += `${i.checked ? '✅' : '◻️'} ${i.qty ? i.qty+' ' : ''}${i.art}\n`;
             });
@@ -272,3 +315,4 @@
     </script>
 </body>
 </html>
+     
