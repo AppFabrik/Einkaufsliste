@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bunte Einkaufsliste</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FF6B6B">
+    <link rel="apple-touch-icon" href="icon-512.png">
+    
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --whatsapp: #25D366;
+            --danger: #FF4757;
+            --share: #5f27cd;
+            --bg-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --text-dark: #2F3542;
+            --white: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-dark);
+        }
+
+        .app-container {
+            background: var(--white);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--secondary);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--white);
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.3s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        #addBtn {
+            background-color: var(--secondary);
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        ul {
+            list-style: none;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            padding: 12px 15px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .item-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .item-text {
+            font-size: 17px;
+            word-break: break-word;
+        }
+
+        .item-text.checked {
+            text-decoration: line-through;
+            color: #a4b0be;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--secondary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .checked .checkbox {
+            background-color: var(--secondary);
+        }
+
+        .delete-item-btn {
+            background: transparent;
+            color: var(--danger);
+            width: auto;
+            padding: 8px;
+            font-size: 20px;
+            box-shadow: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        .whatsapp-btn {
+            background-color: var(--whatsapp);
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+        }
+
+        .clear-btn {
+            background-color: var(--danger);
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+        }
+
+        .share-app-btn {
+            background-color: var(--share);
+            box-shadow: 0 4px 15px rgba(95, 39, 205, 0.4);
+        }
+
+        /* Scrollbar styling für schöne Listen */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <h1>🛍️ Einkaufsliste</h1>
+
+        <div class="input-group">
+            <input type="text" id="articleInput" list="articleList" placeholder="Artikel (z.B. Milch)">
+            <datalist id="articleList"></datalist>
+
+            <input type="text" id="quantityInput" list="quantityList" placeholder="Menge (z.B. 2 Liter)">
+            <datalist id="quantityList"></datalist>
+        </div>
+
+        <button id="addBtn" onclick="addItem()">Hinzufügen ➕</button>
+
+        <ul id="shoppingList">
+            </ul>
+
+        <div class="action-buttons">
+            <button class="whatsapp-btn" onclick="shareWhatsApp()">Teilen via WhatsApp 💬</button>
+            <button class="clear-btn" onclick="clearList()">Liste löschen 🗑️</button>
+            <button class="share-app-btn" onclick="shareApp()">App teilen 🔗</button>
+        </div>
+    </div>
+
+    <script>
+        // PWA: Service Worker registrieren
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => console.log('ServiceWorker erfolgreich registriert:', registration.scope))
+                    .catch(err => console.log('ServiceWorker Registrierung fehlgeschlagen:', err));
+            });
+        }
+
+        // Datenstrukturen
+        let listItems = JSON.parse(localStorage.getItem('shoppingList')) || [];
+        let savedArticles = JSON.parse(localStorage.getItem('savedArticles')) || [];
+        let savedQuantities = JSON.parse(localStorage.getItem('savedQuantities')) || [];
+
+        // HTML Elemente
+        const articleInput = document.getElementById('articleInput');
+        const quantityInput = document.getElementById('quantityInput');
+        const listContainer = document.getElementById('shoppingList');
+        const articleDatalist = document.getElementById('articleList');
+        const quantityDatalist = document.getElementById('quantityList');
+
+        // Initialisierung
+        function init() {
+            updateDatalists();
+            renderList();
+        }
+
+        // Datalists (Autovervollständigung) aktualisieren
+        function updateDatalists() {
+            articleDatalist.innerHTML = '';
+            savedArticles.forEach(article => {
+                let option = document.createElement('option');
+                option.value = article;
+                articleDatalist.appendChild(option);
+            });
+
+            quantityDatalist.innerHTML = '';
+            savedQuantities.forEach(qty => {
+                let option = document.createElement('option');
+                option.value = qty;
+                quantityDatalist.appendChild(option);
+            });
+        }
+
+        // Artikel hinzufügen
+        function addItem() {
+            const article = articleInput.value.trim();
+            const quantity = quantityInput.value.trim();
+
+            if (!article) {
+                alert("Bitte gib zumindest einen Artikel ein!");
+                return;
+            }
+
+            // Neues Item zur Liste hinzufügen
+            listItems.push({
+                article: article,
+                quantity: quantity,
+                checked: false
+            });
+
+            // Für Autovervollständigung speichern (ohne Duplikate)
+            if (!savedArticles.includes(article)) {
+                savedArticles.push(article);
+                localStorage.setItem('savedArticles', JSON.stringify(savedArticles));
+            }
+            if (quantity && !savedQuantities.includes(quantity)) {
+                savedQuantities.push(quantity);
+                localStorage.setItem('savedQuantities', JSON.stringify(savedQuantities));
+            }
+
+            saveAndRender();
+            
+            // Felder leeren und Fokus zurück auf Artikel
+            articleInput.value = '';
+            quantityInput.value = '';
+            articleInput.focus();
+            updateDatalists();
+        }
+
+        // Liste rendern
+        function renderList() {
+            listContainer.innerHTML = '';
+            listItems.forEach((item, index) => {
+                const li = document.createElement('li');
+                
+                const itemContent = document.createElement('div');
+                itemContent.className = 'item-content ' + (item.checked ? 'checked' : '');
+                itemContent.onclick = () => toggleCheck(index);
+
+                const checkbox = document.createElement('div');
+                checkbox.className = 'checkbox';
+                checkbox.innerHTML = item.checked ? '✓' : '';
+
+                const textSpan = document.createElement('span');
+                textSpan.className = 'item-text ' + (item.checked ? 'checked' : '');
+                textSpan.innerText = item.quantity ? `${item.quantity} ${item.article}` : item.article;
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-item-btn';
+                deleteBtn.innerHTML = '✖';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation(); // Verhindert, dass das Item abgehakt wird beim Löschen
+                    deleteItem(index);
+                };
+
+                itemContent.appendChild(checkbox);
+                itemContent.appendChild(textSpan);
+                li.appendChild(itemContent);
+                li.appendChild(deleteBtn);
+                listContainer.appendChild(li);
+            });
+        }
+
+        // Abhaken/Rückgängig
+        function toggleCheck(index) {
+            listItems[index].checked = !listItems[index].checked;
+            saveAndRender();
+        }
+
+        // Einzelnes Item löschen
+        function deleteItem(index) {
+            listItems.splice(index, 1);
+            saveAndRender();
+        }
+
+        // Gesamte Liste löschen
+        function clearList() {
+            if(confirm('Möchtest du die aktuelle Einkaufsliste wirklich komplett löschen?')) {
+                listItems = [];
+                saveAndRender();
+            }
+        }
+
+        // Über WhatsApp teilen (Teilt die Einkaufsliste)
+        function shareWhatsApp() {
+            if (listItems.length === 0) {
+                alert("Deine Liste ist leer!");
+                return;
+            }
+
+            let text = "🛒 *Meine Einkaufsliste:*\n\n";
+            listItems.forEach(item => {
+                let status = item.checked ? "✅" : "◻️";
+                let qty = item.quantity ? `${item.quantity} ` : "";
+                text += `${status} ${qty}${item.article}\n`;
+            });
+
+            const encodedText = encodeURIComponent(text);
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // App-Link teilen (Teilt die App selbst)
+        function shareApp() {
+            const appUrl = window.location.href;
+            const shareData = {
+                title: 'Bunte Einkaufsliste',
+                text: 'Schau dir diese praktische Einkaufslisten-App an!',
+                url: appUrl
+            };
+
+            // Prüfen, ob der Browser die native Share-API unterstützt (z.B. auf Smartphones)
+            if (navigator.share) {
+                navigator.share(shareData)
+                    .catch((error) => console.log('Fehler beim Teilen:', error));
+            } else {
+                // Fallback: Link in die Zwischenablage kopieren (z.B. Desktop)
+                navigator.clipboard.writeText(appUrl).then(() => {
+                    alert("Der Link zur App wurde in deine Zwischenablage kopiert!");
+                }).catch(err => {
+                    alert("Link konnte nicht kopiert werden. Die URL lautet:\n" + appUrl);
+                });
+            }
+        }
+
+        // Speichern und UI updaten
+        function saveAndRender() {
+            localStorage.setItem('shoppingList', JSON.stringify(listItems));
+            renderList();
+        }
+
+        // Start der App
+        init();
+
+        // Enter-Taste zum Hinzufügen unterstützen
+        articleInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") addItem();
+        });
+        quantityInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") addItem();
+        });
+
+    </script>
+</body>
+</html>
