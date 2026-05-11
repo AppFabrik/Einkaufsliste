@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -15,7 +15,7 @@
         :root {
             --primary: #FF6B6B;
             --secondary: #4ECDC4;
-            --baumarkt: #D35400; /* Abgedunkeltes Orange für perfekten Kontrast */
+            --baumarkt: #D35400; /* Abgedunkeltes Orange für Kontrast */
             --whatsapp: #25D366;
             --danger: #FF4757;
             --share: #5f27cd;
@@ -47,7 +47,6 @@
             gap: 15px;
         }
 
-        /* Tabs für die Auswahl */
         .mode-selector {
             display: flex;
             gap: 10px;
@@ -188,13 +187,13 @@
         <div class="action-buttons">
             <button class="whatsapp-btn" onclick="shareWhatsApp()">Liste teilen <i class="fa-brands fa-whatsapp"></i></button>
             <button class="clear-btn" onclick="clearList()">Liste löschen <i class="fa-solid fa-trash-can"></i></button>
+            <button class="share-app-btn" onclick="shareApp()">App teilen <i class="fa-solid fa-share-nodes"></i></button>
         </div>
     </div>
 
     <script>
         let currentMode = 'discounter';
         
-        // Laden der Daten für beide Modi
         let data = JSON.parse(localStorage.getItem('pwa_shopping_data')) || {
             discounter: { items: [], suggestions: [] },
             baumarkt: { items: [], suggestions: [] }
@@ -207,11 +206,8 @@
 
         function setMode(mode) {
             currentMode = mode;
-            
-            // UI Anpassungen
             document.body.className = mode + '-theme';
             
-            // Update Title with corresponding Icon
             const titleElement = document.getElementById('appTitle');
             if(mode === 'discounter') {
                 titleElement.innerHTML = '<i class="fa-solid fa-basket-shopping"></i> Discounter Liste';
@@ -258,8 +254,6 @@
             listContainer.innerHTML = '';
             data[currentMode].items.forEach((item, index) => {
                 const li = document.createElement('li');
-                
-                // Icon für Checkbox einbauen
                 const checkIcon = item.checked ? '<i class="fa-solid fa-check"></i>' : '';
                 
                 li.innerHTML = `
@@ -295,24 +289,46 @@
 
         function shareWhatsApp() {
             let text = `*${currentMode.toUpperCase()}-LISTE:*\n`;
-            // Hier bleiben die echten Emojis erhalten, da WhatsApp sie benötigt
             data[currentMode].items.forEach(i => {
                 text += `${i.checked ? '✅' : '◻️'} ${i.qty ? i.qty+' ' : ''}${i.art}\n`;
             });
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
         }
 
+        // Funktion zum Teilen der App URL
+        async function shareApp() {
+            const shareData = {
+                title: 'Bunte Einkaufsliste',
+                text: 'Schau mal, diese Einkaufsliste ist super praktisch!',
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                } catch (err) {
+                    console.log('Teilen abgebrochen');
+                }
+            } else {
+                // Fallback für Browser ohne Share API
+                try {
+                    await navigator.clipboard.writeText(window.location.href);
+                    alert('Link zur App wurde in die Zwischenablage kopiert!');
+                } catch (err) {
+                    alert('Link: ' + window.location.href);
+                }
+            }
+        }
+
         function save() {
             localStorage.setItem('pwa_shopping_data', JSON.stringify(data));
         }
 
-        // Service Worker Reg
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
 
-        setMode('discounter'); // Start-Modus
+        setMode('discounter');
     </script>
 </body>
 </html>
-     
